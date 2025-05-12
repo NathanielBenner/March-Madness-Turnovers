@@ -1,0 +1,62 @@
+---
+title: "CP3 Workflow"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(readr)
+knitr::opts_chunk$set(echo = TRUE)
+KenPom_Barttorvik <- read_csv("C:/Users/natha/OneDrive/RStuff/STAT 365 CP3/KenPom Barttorvik.csv")
+Upset_Count <- read_csv("C:/Users/natha/OneDrive/RStuff/STAT 365 CP3/Upset Count.csv")
+```
+```{r}
+timeline <- ggplot(KenPom_Barttorvik, aes(x = `YEAR`, y = `TOV%`))
+timeline + geom_smooth(se = FALSE, method = "lm")+scale_x_continuous(limits = c(2008,2024), breaks = seq(2008,2024, 2))+labs(title = "Average Turnover Percentage of Every Team
+in March Madness from 2008-2024", x = "Year", y = "Turnover Percentage")+geom_point(alpha = 0.05)
+```
+
+```{r}
+TovLM <- lm(`YEAR` ~ `TOV%`, data = KenPom_Barttorvik)
+summary(TovLM)
+```
+
+```{r}
+binom.test(14, 63, p = 9/63)
+```
+
+```{r}
+UpsetCount <- Upset_Count|>
+  select(YEAR,TOTAL)
+
+row_15 <- UpsetCount[15, ]
+UpsetCount <- UpsetCount |>
+  mutate(
+    TOTAL_percent_increase = ((TOTAL - row_15$TOTAL) / row_15$TOTAL) * 100
+  )
+
+print(UpsetCount)
+
+UpsetCount <- UpsetCount |>
+  filter(YEAR != 2008)
+
+ggplot(data = UpsetCount, aes(x = YEAR, y = TOTAL_percent_increase)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black", width = 0.7) +
+  labs(title = "March Madness (Basketball) Upset Percentage",
+       subtitle = "Increase Compared to 2008 Count",
+       x = NULL,
+       y = "Upset Percentage Increase") +
+  scale_x_continuous(breaks = seq(min(UpsetCount$YEAR), max(UpsetCount$YEAR), by = 1)) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    plot.title = element_text(size = 20),
+    plot.subtitle = element_text(size = 15),
+    plot.caption = element_text(size = 10),
+    panel.grid.major = element_line(color = "gray80"),
+    panel.grid.minor = element_blank()
+  )
+```
